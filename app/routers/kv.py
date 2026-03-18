@@ -6,6 +6,7 @@ from app.core.errors import APIError
 from app.schemas.kv import (
     ExpireRequest,
     ErrorResponse,
+    InvalidatePrefixRequest,
     KV_FAILURE_EXAMPLES,
     KV_SUCCESS_EXAMPLES,
     KeyQuery,
@@ -14,6 +15,7 @@ from app.schemas.kv import (
     SuccessResponse,
 )
 from app.services.kv_service import KVService
+from app.services.cache_metrics import cache_metrics
 from app.stores.kv_store import InMemoryKVStore
 
 router = APIRouter(prefix="/v1/kv", tags=["kv"])
@@ -57,7 +59,9 @@ def set_value(payload: SetRequest) -> SuccessResponse:
 def get_value(query: Annotated[KeyQuery, Depends()]) -> SuccessResponse:
     value = service.get_value(query.key)
     if value is None:
+        cache_metrics.record_miss()
         raise APIError("KEY_NOT_FOUND")
+    cache_metrics.record_hit()
     return SuccessResponse(data={"key": query.key, "value": value})
 
 
@@ -68,6 +72,8 @@ def get_value(query: Annotated[KeyQuery, Depends()]) -> SuccessResponse:
 )
 def delete_value(query: Annotated[KeyQuery, Depends()]) -> SuccessResponse:
     deleted = service.delete_value(query.key)
+    if deleted:
+        cache_metrics.record_delete()
     return SuccessResponse(data={"deleted": deleted})
 
 
@@ -127,6 +133,18 @@ def ttl_value(query: Annotated[KeyQuery, Depends()]) -> SuccessResponse:
 def persist_value(payload: PersistRequest) -> SuccessResponse:
     updated = service.persist_value(payload.key)
     return SuccessResponse(data={"updated": updated})
+
+
+@router.post(
+    "/invalidate-prefix",
+    response_model=SuccessResponse,
+    responses=COMMON_ERROR_RESPONSES,
+)
+def invalidate_prefix_value(payload: InvalidatePrefixRequest) -> SuccessResponse:
+    deleted_count = service.invalidate_prefix_value(payload.prefix)
+    cache_metrics.record_invalidation()
+    cache_metrics.record_delete(deleted_count)
+    return SuccessResponse(data={"deletedCount": deleted_count})
 
 
 __all__ = ["router", "KV_SUCCESS_EXAMPLES", "KV_FAILURE_EXAMPLES"]

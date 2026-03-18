@@ -98,7 +98,7 @@
 응답: `{ "deletedCount": 2 }`
 
 ### 3.9 `GET /v1/metrics/cache`
-응답: `{ "hits": 10, "misses": 3, "deletes": 2, "errors": 0 }`
+응답: `{ "hits": 10, "misses": 3, "deletes": 2, "invalidations": 1, "errors": 0 }`
 
 ### 3.10 `GET /v1/system/readiness`
 응답: `{ "ready": true|false, "stage": 4, "summary": "..." }`
