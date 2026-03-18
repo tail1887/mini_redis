@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 import time
 from typing import Callable
 from typing import Protocol
@@ -38,67 +39,76 @@ class InMemoryKVStore:
         self._data: dict[str, str] = {}
         self._expires_at: dict[str, float] = {}
         self._time_fn = time_fn or time.time
+        self._lock = threading.RLock()
 
     def set(self, key: str, value: str) -> bool:
-        self._data[key] = value
-        self._expires_at.pop(key, None)
-        return True
+        with self._lock:
+            self._data[key] = value
+            self._expires_at.pop(key, None)
+            return True
 
     def get(self, key: str) -> str | None:
-        if not self._has_live_key(key):
-            return None
-        return self._data.get(key)
+        with self._lock:
+            if not self._has_live_key(key):
+                return None
+            return self._data.get(key)
 
     def delete(self, key: str) -> bool:
-        if not self._has_live_key(key):
-            return False
-        self._delete_internal(key)
-        return True
+        with self._lock:
+            if not self._has_live_key(key):
+                return False
+            self._delete_internal(key)
+            return True
 
     def exists(self, key: str) -> bool:
-        return self._has_live_key(key)
+        with self._lock:
+            return self._has_live_key(key)
 
     def expire(self, key: str, seconds: int) -> bool:
-        if seconds <= 0:
-            return False
-        if not self._has_live_key(key):
-            return False
-        self._expires_at[key] = self._time_fn() + seconds
-        return True
+        with self._lock:
+            if seconds <= 0:
+                return False
+            if not self._has_live_key(key):
+                return False
+            self._expires_at[key] = self._time_fn() + seconds
+            return True
 
     def ttl(self, key: str) -> int:
-        if not self._has_live_key(key):
-            return -2
+        with self._lock:
+            if not self._has_live_key(key):
+                return -2
 
-        expires_at = self._expires_at.get(key)
-        if expires_at is None:
-            return -1
+            expires_at = self._expires_at.get(key)
+            if expires_at is None:
+                return -1
 
-        remaining = expires_at - self._time_fn()
-        if remaining <= 0:
-            self._delete_internal(key)
-            return -2
-        return int(remaining)
+            remaining = expires_at - self._time_fn()
+            if remaining <= 0:
+                self._delete_internal(key)
+                return -2
+            return int(remaining)
 
     def persist(self, key: str) -> bool:
-        if not self._has_live_key(key):
-            return False
-        if key not in self._expires_at:
-            return False
-        self._expires_at.pop(key, None)
-        return True
+        with self._lock:
+            if not self._has_live_key(key):
+                return False
+            if key not in self._expires_at:
+                return False
+            self._expires_at.pop(key, None)
+            return True
 
     def invalidate_prefix(self, prefix: str) -> int:
-        deleted_keys = [
-            key
-            for key in list(self._data.keys())
-            if self._has_live_key(key) and key.startswith(prefix)
-        ]
+        with self._lock:
+            deleted_keys = [
+                key
+                for key in list(self._data.keys())
+                if self._has_live_key(key) and key.startswith(prefix)
+            ]
 
-        for key in deleted_keys:
-            self._delete_internal(key)
+            for key in deleted_keys:
+                self._delete_internal(key)
 
-        return len(deleted_keys)
+            return len(deleted_keys)
 
     def _has_live_key(self, key: str) -> bool:
         if key not in self._data:
