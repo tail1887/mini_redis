@@ -1,21 +1,7 @@
-from typing import Any
-
 from pydantic import BaseModel, Field
 
-
-class ErrorDetail(BaseModel):
-    code: str
-    message: str
-
-
-class SuccessResponse(BaseModel):
-    success: bool = True
-    data: dict[str, Any]
-
-
-class ErrorResponse(BaseModel):
-    success: bool = False
-    error: ErrorDetail
+from app.core.errors import build_error_payload
+from app.schemas.common import ErrorResponse, SuccessResponse
 
 
 class SetRequest(BaseModel):
@@ -27,27 +13,15 @@ class KeyQuery(BaseModel):
     key: str = Field(min_length=1)
 
 
-KV_SUCCESS_EXAMPLES: dict[str, dict[str, Any]] = {
+KV_SUCCESS_EXAMPLES: dict[str, dict[str, object]] = {
     "set": {"success": True, "data": {"stored": True}},
     "get": {"success": True, "data": {"key": "user:1", "value": "kim"}},
     "del": {"success": True, "data": {"deleted": True}},
     "exists": {"success": True, "data": {"exists": True}},
 }
 
-KV_FAILURE_EXAMPLES: dict[str, dict[str, Any]] = {
-    "invalid_input": {
-        "success": False,
-        "error": {"code": "INVALID_INPUT", "message": "key is required"},
-    },
-    "key_not_found": {
-        "success": False,
-        "error": {"code": "KEY_NOT_FOUND", "message": "key not found"},
-    },
-    "not_implemented": {
-        "success": False,
-        "error": {
-            "code": "NOT_IMPLEMENTED",
-            "message": "KV feature scaffolded only. Implementation is pending.",
-        },
-    },
+KV_FAILURE_EXAMPLES: dict[str, dict[str, object]] = {
+    "invalid_input": build_error_payload("INVALID_INPUT", "key is required"),
+    "key_not_found": build_error_payload("KEY_NOT_FOUND"),
+    "internal_error": build_error_payload("INTERNAL_ERROR"),
 }
