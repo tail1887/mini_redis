@@ -18,3 +18,6 @@ def get_cache_metrics() -> SuccessResponse:
             "errors": snapshot.errors,
         }
     )
+
+
+__all__ = ["router"]

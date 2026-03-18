@@ -96,6 +96,10 @@ def delete_value(query: Annotated[KeyQuery, Depends()]) -> SuccessResponse:
 )
 def exists_value(query: Annotated[KeyQuery, Depends()]) -> SuccessResponse:
     exists = service.exists_value(query.key)
+    if exists:
+        cache_metrics.record_hit()
+    else:
+        cache_metrics.record_miss()
     return SuccessResponse(data={"exists": exists})
 
 

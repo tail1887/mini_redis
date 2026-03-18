@@ -20,17 +20,21 @@ logger = logging.getLogger(__name__)
 
 @app.exception_handler(APIError)
 async def handle_api_error(_: Request, exc: APIError) -> JSONResponse:
+    if exc.code != "KEY_NOT_FOUND":
+        cache_metrics.record_error()
     return JSONResponse(status_code=exc.status_code, content=exc.to_response())
 
 
 @app.exception_handler(RequestValidationError)
 async def handle_request_validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+    cache_metrics.record_error()
     api_error = map_validation_error(exc)
     return JSONResponse(status_code=api_error.status_code, content=api_error.to_response())
 
 
 @app.exception_handler(ValidationError)
 async def handle_model_validation_error(_: Request, exc: ValidationError) -> JSONResponse:
+    cache_metrics.record_error()
     api_error = map_validation_error(exc)
     return JSONResponse(status_code=api_error.status_code, content=api_error.to_response())
 

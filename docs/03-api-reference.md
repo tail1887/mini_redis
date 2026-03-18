@@ -99,7 +99,8 @@
 실패: live key가 하나도 매치되지 않으면 HTTP `400`, `PREFIX_INVALID`
 
 ### 3.9 `GET /v1/metrics/cache`
-응답: `{ "hits": 10, "misses": 3, "deletes": 2, "invalidations": 1, "errors": 0 }`
+응답: `{ "success": true, "data": { "hits": 10, "misses": 3, "deletes": 2, "invalidations": 1, "errors": 0 } }`
+설명: `hits`는 조회/존재확인 성공 수, `misses`는 조회/존재확인 실패 수, `deletes`는 실제 삭제 성공 수, `invalidations`는 prefix 무효화 성공 수, `errors`는 입력/서버 오류 수를 뜻한다.
 
 ### 3.10 `GET /v1/system/readiness`
 응답: `{ "ready": true|false, "stage": 4, "summary": "..." }`
