@@ -79,6 +79,14 @@ docker compose up -d --build
 python -m scripts.deploy_health_check --url http://localhost:8000/v1/health --attempts 10 --interval 3 --timeout 2
 ```
 
+## 발표 대시보드
+
+- 페이지: `GET /dashboard`
+- 실행 버튼 API: `POST /v1/dashboard/run-tests`
+- 상태 조회 API: `GET /v1/dashboard/test-status`
+
+`/dashboard`에서 버튼을 눌러 `pytest --json-report`를 실행하고, 페이즈별 테스트 요약이 실시간 갱신됩니다.
+
 ## 부하 테스트 템플릿
 
 ```bash

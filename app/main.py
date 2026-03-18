@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from app.core.errors import APIError, map_validation_error
+from app.routers.dashboard import router as dashboard_router
 from app.routers.kv import router as kv_router
 from app.routers.metrics import router as metrics_router
 from app.routers.system import router as system_router
@@ -17,6 +18,7 @@ app = FastAPI(title="mini_redis", version="0.1.0")
 app.include_router(kv_router)
 app.include_router(metrics_router)
 app.include_router(system_router)
+app.include_router(dashboard_router)
 logger = logging.getLogger(__name__)
 
 
