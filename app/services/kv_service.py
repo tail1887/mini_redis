@@ -32,3 +32,6 @@ class KVService:
 
     def persist_value(self, key: str) -> bool:
         return self.store.persist(key)
+
+    def invalidate_prefix_value(self, prefix: str) -> int:
+        return self.store.invalidate_prefix(prefix)
