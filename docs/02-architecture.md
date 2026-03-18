@@ -64,11 +64,12 @@
 
 | 필드 | 타입 | 설명 |
 | --- | --- | --- |
-| `key` | `string` | 저장 키(빈 문자열 불가) |
+| `key` | `string` | 저장 키. 네임스페이스 포맷 `<prefix>:<name>` 사용, 빈 세그먼트/공백 금지 |
 | `value` | `string` | 저장 값 |
 | `expiresAt` | `number \| null` | 만료 시각(epoch ms), 없으면 `null` |
 
 핵심 규칙:
+- 모든 KV 키는 네임스페이스 기반(`user:1`, `team:user:1`)으로 저장한다.
 - 만료된 키는 조회 시 미존재로 처리한다.
 - TTL 반환 규칙은 API 문서와 동일해야 한다.
 

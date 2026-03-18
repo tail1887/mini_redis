@@ -63,3 +63,31 @@ def test_exists_success() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"success": True, "data": {"exists": True}}
+
+
+def test_set_rejects_key_without_namespace() -> None:
+    client = TestClient(app)
+    response = client.post("/v1/kv/set", json={"key": "user", "value": "kim"})
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "success": False,
+        "error": {
+            "code": "INVALID_INPUT",
+            "message": "key must use namespace format (<prefix>:<name>)",
+        },
+    }
+
+
+def test_get_rejects_invalid_prefix_query() -> None:
+    client = TestClient(app)
+    response = client.get("/v1/kv/get", params={"key": "user::1"})
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "success": False,
+        "error": {
+            "code": "INVALID_INPUT",
+            "message": "prefix cannot contain empty namespace segments",
+        },
+    }

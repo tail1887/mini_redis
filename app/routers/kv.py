@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Query
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
 from app.schemas.kv import (
     ErrorResponse,
     KV_FAILURE_EXAMPLES,
     KV_SUCCESS_EXAMPLES,
+    KeyQuery,
     SetRequest,
     SuccessResponse,
 )
@@ -32,22 +35,28 @@ def set_value(payload: SetRequest) -> SuccessResponse:
     response_model=SuccessResponse,
     responses={
         400: {"model": ErrorResponse, "content": {"application/json": {"example": KV_FAILURE_EXAMPLES["invalid_input"]}}},
-        404: {"model": ErrorResponse, "content": {"application/json": {"example": KV_FAILURE_EXAMPLES["key_not_found"]}}}
+        404: {"model": ErrorResponse, "content": {"application/json": {"example": KV_FAILURE_EXAMPLES["key_not_found"]}}},
     },
 )
-def get_value(key: str = Query(min_length=1)) -> SuccessResponse | ErrorResponse:
-    value = service.get_value(key)
+def get_value(query: Annotated[KeyQuery, Depends()]) -> SuccessResponse | ErrorResponse:
+    value = service.get_value(query.key)
     if value is None:
         return JSONResponse(
             status_code=404,
             content=KV_FAILURE_EXAMPLES["key_not_found"],
         )
-    return SuccessResponse(data={"key": key, "value": value})
+    return SuccessResponse(data={"key": query.key, "value": value})
 
 
-@router.delete("/del", response_model=SuccessResponse)
-def delete_value(key: str = Query(min_length=1)) -> SuccessResponse:
-    deleted = service.delete_value(key)
+@router.delete(
+    "/del",
+    response_model=SuccessResponse,
+    responses={
+        400: {"model": ErrorResponse, "content": {"application/json": {"example": KV_FAILURE_EXAMPLES["invalid_input"]}}}
+    },
+)
+def delete_value(query: Annotated[KeyQuery, Depends()]) -> SuccessResponse:
+    deleted = service.delete_value(query.key)
     return SuccessResponse(data={"deleted": deleted})
 
 
@@ -64,11 +73,12 @@ def delete_value(key: str = Query(min_length=1)) -> SuccessResponse:
                     }
                 }
             }
-        }
+        },
+        400: {"model": ErrorResponse, "content": {"application/json": {"example": KV_FAILURE_EXAMPLES["invalid_input"]}}},
     },
 )
-def exists_value(key: str = Query(min_length=1)) -> SuccessResponse:
-    exists = service.exists_value(key)
+def exists_value(query: Annotated[KeyQuery, Depends()]) -> SuccessResponse:
+    exists = service.exists_value(query.key)
     return SuccessResponse(data={"exists": exists})
 
 

@@ -1,6 +1,8 @@
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, field_validator
+
+from app.services.key_namespace import validate_namespaced_key
 
 
 class ErrorDetail(BaseModel):
@@ -19,12 +21,22 @@ class ErrorResponse(BaseModel):
 
 
 class SetRequest(BaseModel):
-    key: str = Field(min_length=1)
+    key: str
     value: str
+
+    @field_validator("key")
+    @classmethod
+    def validate_key(cls, value: str) -> str:
+        return validate_namespaced_key(value)
 
 
 class KeyQuery(BaseModel):
-    key: str = Field(min_length=1)
+    key: str
+
+    @field_validator("key")
+    @classmethod
+    def validate_key(cls, value: str) -> str:
+        return validate_namespaced_key(value)
 
 
 KV_SUCCESS_EXAMPLES: dict[str, dict[str, Any]] = {
@@ -37,7 +49,10 @@ KV_SUCCESS_EXAMPLES: dict[str, dict[str, Any]] = {
 KV_FAILURE_EXAMPLES: dict[str, dict[str, Any]] = {
     "invalid_input": {
         "success": False,
-        "error": {"code": "INVALID_INPUT", "message": "key is required"},
+        "error": {
+            "code": "INVALID_INPUT",
+            "message": "key must use namespace format (<prefix>:<name>)",
+        },
     },
     "key_not_found": {
         "success": False,
