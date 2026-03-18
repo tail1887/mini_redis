@@ -138,10 +138,16 @@ def persist_value(payload: PersistRequest) -> SuccessResponse:
 @router.post(
     "/invalidate-prefix",
     response_model=SuccessResponse,
-    responses=COMMON_ERROR_RESPONSES,
+    responses={
+        **COMMON_ERROR_RESPONSES,
+        400: {
+            "model": ErrorResponse,
+            "content": {"application/json": {"example": KV_FAILURE_EXAMPLES["prefix_invalid"]}},
+        },
+    },
 )
 def invalidate_prefix_value(payload: InvalidatePrefixRequest) -> SuccessResponse:
-    deleted_count = service.invalidate_prefix_value(payload.prefix)
+    deleted_count = service.invalidate_prefix(payload.prefix)
     cache_metrics.record_invalidation()
     cache_metrics.record_delete(deleted_count)
     return SuccessResponse(data={"deletedCount": deleted_count})

@@ -4,8 +4,7 @@ from pydantic import BaseModel, field_validator
 
 from app.core.errors import build_error_payload
 from app.schemas.common import ErrorResponse, SuccessResponse
-from app.services.key_namespace import validate_namespaced_key
-from app.services.key_namespace import validate_prefix
+from app.services.key_namespace import validate_namespaced_key, validate_prefix
 
 
 class SetRequest(BaseModel):
@@ -70,5 +69,6 @@ KV_FAILURE_EXAMPLES: dict[str, dict[str, Any]] = {
     "invalid_input": build_error_payload("INVALID_INPUT"),
     "key_not_found": build_error_payload("KEY_NOT_FOUND"),
     "ttl_invalid": build_error_payload("TTL_INVALID", "seconds must be a positive integer"),
+    "prefix_invalid": build_error_payload("PREFIX_INVALID", "prefix did not match any live keys"),
     "internal_error": build_error_payload("INTERNAL_ERROR"),
 }
