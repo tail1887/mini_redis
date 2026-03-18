@@ -50,7 +50,22 @@ def delete_value(key: str = Query(min_length=1)) -> SuccessResponse:
     return SuccessResponse(data={"deleted": deleted})
 
 
-@router.get("/exists", response_model=SuccessResponse)
+@router.get(
+    "/exists",
+    response_model=SuccessResponse,
+    responses={
+        200: {
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "exists": {"summary": "Key exists", "value": KV_SUCCESS_EXAMPLES["exists"]},
+                        "missing": {"summary": "Key missing", "value": {"success": True, "data": {"exists": False}}},
+                    }
+                }
+            }
+        }
+    },
+)
 def exists_value(key: str = Query(min_length=1)) -> SuccessResponse:
     exists = service.exists_value(key)
     return SuccessResponse(data={"exists": exists})
