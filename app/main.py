@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -10,6 +12,7 @@ from app.schemas.common import SuccessResponse
 
 app = FastAPI(title="mini_redis", version="0.1.0")
 app.include_router(kv_router)
+logger = logging.getLogger(__name__)
 
 
 @app.exception_handler(APIError)
@@ -30,7 +33,8 @@ async def handle_model_validation_error(_: Request, exc: ValidationError) -> JSO
 
 
 @app.exception_handler(Exception)
-async def handle_unexpected_error(_: Request, __: Exception) -> JSONResponse:
+async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
+    logger.exception("Unhandled exception during request processing", exc_info=exc)
     api_error = APIError("INTERNAL_ERROR")
     return JSONResponse(status_code=api_error.status_code, content=api_error.to_response())
 

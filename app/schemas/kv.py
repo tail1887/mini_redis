@@ -34,7 +34,7 @@ KV_SUCCESS_EXAMPLES: dict[str, dict[str, object]] = {
 }
 
 KV_FAILURE_EXAMPLES: dict[str, dict[str, Any]] = {
-    "invalid_input": build_error_payload("INVALID_INPUT", "key is required"),
+    "invalid_input": build_error_payload("INVALID_INPUT"),
     "key_not_found": build_error_payload("KEY_NOT_FOUND"),
     "internal_error": build_error_payload("INTERNAL_ERROR"),
 }
