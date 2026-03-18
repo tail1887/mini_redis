@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 
 from app.core.errors import APIError
+from app.observability.cache_metrics import cache_metrics
 from app.schemas.kv import (
     ErrorResponse,
     KV_FAILURE_EXAMPLES,
@@ -12,7 +13,7 @@ from app.services.kv_service import KVService
 from app.stores.kv_store import InMemoryKVStore
 
 router = APIRouter(prefix="/v1/kv", tags=["kv"])
-service = KVService(store=InMemoryKVStore())
+service = KVService(store=InMemoryKVStore(), metrics=cache_metrics)
 
 COMMON_ERROR_RESPONSES = {
     400: {
