@@ -6,6 +6,7 @@ from app.core.errors import APIError
 from app.schemas.kv import (
     ExpireRequest,
     ErrorResponse,
+    InvalidatePrefixRequest,
     KV_FAILURE_EXAMPLES,
     KV_SUCCESS_EXAMPLES,
     KeyQuery,
@@ -127,6 +128,22 @@ def ttl_value(query: Annotated[KeyQuery, Depends()]) -> SuccessResponse:
 def persist_value(payload: PersistRequest) -> SuccessResponse:
     updated = service.persist_value(payload.key)
     return SuccessResponse(data={"updated": updated})
+
+
+@router.post(
+    "/invalidate-prefix",
+    response_model=SuccessResponse,
+    responses={
+        **COMMON_ERROR_RESPONSES,
+        400: {
+            "model": ErrorResponse,
+            "content": {"application/json": {"example": KV_FAILURE_EXAMPLES["prefix_invalid"]}},
+        },
+    },
+)
+def invalidate_prefix(payload: InvalidatePrefixRequest) -> SuccessResponse:
+    deleted_count = service.invalidate_prefix(payload.prefix)
+    return SuccessResponse(data={"deletedCount": deleted_count})
 
 
 __all__ = ["router", "KV_SUCCESS_EXAMPLES", "KV_FAILURE_EXAMPLES"]

@@ -45,6 +45,10 @@
 - `expire`가 비양수 `seconds`를 `TTL_INVALID`로 거절하는지 확인
 - `expire` unit test에서 기존 키/미존재 키 동작이 분리 검증되는지 확인
 
+단계 3 파트4 추가 체크:
+- `invalidate-prefix`가 sibling namespace를 삭제하지 않는지 failure test로 확인
+- live key 미매치와 expired key cleanup이 삭제 개수 왜곡 없이 처리되는지 장애 테스트로 확인
+
 - AI가 생성한 테스트 템플릿이 현재 API 계약과 일치하는지 확인
 - 누락된 실패 케이스(경계값/잘못된 입력) 보강
 - 기존 회귀 테스트와 충돌 여부 확인

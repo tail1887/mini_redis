@@ -96,6 +96,7 @@
 ### 3.8 `POST /v1/kv/invalidate-prefix`
 요청: `{ "prefix": "user:" }`  
 응답: `{ "deletedCount": 2 }`
+실패: live key가 하나도 매치되지 않으면 HTTP `400`, `PREFIX_INVALID`
 
 ### 3.9 `GET /v1/metrics/cache`
 응답: `{ "hits": 10, "misses": 3, "deletes": 2, "errors": 0 }`
@@ -110,6 +111,7 @@
 - `value`: 문자열
 - `seconds`: 양의 정수
 - `prefix`: 필수, 빈 문자열 금지, `:`로 끝나야 함, 빈 세그먼트/공백 금지
+- `invalidate-prefix`: prefix와 정확히 일치하는 namespace의 live key만 삭제하고, 만료된 키는 삭제 개수에서 제외
 
 예시:
 - 허용 `key`: `user:1`, `team:user:1`

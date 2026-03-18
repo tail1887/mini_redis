@@ -27,6 +27,9 @@ class KVStore(Protocol):
     def persist(self, key: str) -> bool:
         ...
 
+    def invalidate_prefix(self, prefix: str) -> int:
+        ...
+
 
 class InMemoryKVStore:
     """In-memory KV store with TTL cleanup on read/write state transitions."""
@@ -84,6 +87,18 @@ class InMemoryKVStore:
             return False
         self._expires_at.pop(key, None)
         return True
+
+    def invalidate_prefix(self, prefix: str) -> int:
+        deleted_keys = [
+            key
+            for key in list(self._data.keys())
+            if self._has_live_key(key) and key.startswith(prefix)
+        ]
+
+        for key in deleted_keys:
+            self._delete_internal(key)
+
+        return len(deleted_keys)
 
     def _has_live_key(self, key: str) -> bool:
         if key not in self._data:

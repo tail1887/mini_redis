@@ -32,3 +32,9 @@ class KVService:
 
     def persist_value(self, key: str) -> bool:
         return self.store.persist(key)
+
+    def invalidate_prefix(self, prefix: str) -> int:
+        deleted_count = self.store.invalidate_prefix(prefix)
+        if deleted_count == 0:
+            raise APIError("PREFIX_INVALID", message="prefix did not match any live keys")
+        return deleted_count
