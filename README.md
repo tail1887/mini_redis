@@ -46,6 +46,12 @@ Redis 발전 흐름(1~4세대)을 따라 범용 캐시 시스템을 단계적으
 - 파트 3: TTL/무효화(만료와 삭제 정책)
 - 파트 4: 테스트/문서(Unit/Integration/Failure/Load 결과 정리)
 
+## 키 규칙
+
+- 단계 1부터 모든 KV 키는 `<prefix>:<name>` 형식을 사용합니다.
+- 예: `user:1`, `team:user:1`
+- 금지 예: `user`, `user:`, `:1`, `user::1`
+
 ## 문서
 
 - [기획](docs/01-product-planning.md)
@@ -76,4 +82,3 @@ docker compose up -d --build
 - `EC2_APP_DIR`
 
 EC2의 배포 디렉터리에는 `docker-compose.yml`과 `.env`(예: `.env.example` 참고)가 있어야 합니다.
-

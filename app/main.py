@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 
 from app.core.errors import APIError, map_validation_error
 from app.routers.kv import router as kv_router
@@ -17,7 +18,13 @@ async def handle_api_error(_: Request, exc: APIError) -> JSONResponse:
 
 
 @app.exception_handler(RequestValidationError)
-async def handle_validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+async def handle_request_validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+    api_error = map_validation_error(exc)
+    return JSONResponse(status_code=api_error.status_code, content=api_error.to_response())
+
+
+@app.exception_handler(ValidationError)
+async def handle_model_validation_error(_: Request, exc: ValidationError) -> JSONResponse:
     api_error = map_validation_error(exc)
     return JSONResponse(status_code=api_error.status_code, content=api_error.to_response())
 

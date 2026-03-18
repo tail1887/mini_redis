@@ -50,7 +50,7 @@ def test_empty_key_returns_standard_invalid_input_error() -> None:
     assert response.status_code == 400
     assert response.json() == {
         "success": False,
-        "error": {"code": "INVALID_INPUT", "message": "key must not be empty"},
+        "error": {"code": "INVALID_INPUT", "message": "key is required"},
     }
 
 

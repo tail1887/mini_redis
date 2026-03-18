@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 
 
 ERROR_DEFINITIONS: dict[str, dict[str, Any]] = {
@@ -42,15 +43,18 @@ def build_error_payload(code: str, message: str | None = None) -> dict[str, Any]
     }
 
 
-def map_validation_error(exc: RequestValidationError) -> APIError:
+def map_validation_error(exc: RequestValidationError | ValidationError) -> APIError:
     detail = exc.errors()[0] if exc.errors() else {}
     field = _extract_field_name(detail)
     error_type = detail.get("type")
+    raw_message = detail.get("msg")
 
     if error_type == "missing" and field:
         message = f"{field} is required"
     elif error_type in {"string_too_short", "too_short"} and field:
         message = f"{field} must not be empty"
+    elif isinstance(raw_message, str) and raw_message:
+        message = raw_message.removeprefix("Value error, ")
     else:
         message = ERROR_DEFINITIONS["INVALID_INPUT"]["message"]
 
