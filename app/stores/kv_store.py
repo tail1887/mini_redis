@@ -29,7 +29,7 @@ class KVStore(Protocol):
 
 
 class InMemoryKVStore:
-    """Stage-1 scaffold store: only method signatures and simple in-memory behavior."""
+    """In-memory KV store with TTL cleanup on read/write state transitions."""
 
     def __init__(self) -> None:
         self._data: dict[str, str] = {}
@@ -41,34 +41,27 @@ class InMemoryKVStore:
         return True
 
     def get(self, key: str) -> str | None:
-        if self._is_expired(key):
-            self._delete_internal(key)
+        if not self._has_live_key(key):
             return None
         return self._data.get(key)
 
     def delete(self, key: str) -> bool:
-        if key not in self._data:
+        if not self._has_live_key(key):
             return False
         self._delete_internal(key)
         return True
 
     def exists(self, key: str) -> bool:
-        if self._is_expired(key):
-            self._delete_internal(key)
-            return False
-        return key in self._data
+        return self._has_live_key(key)
 
     def expire(self, key: str, seconds: int) -> bool:
-        if not self.exists(key):
+        if not self._has_live_key(key):
             return False
         self._expires_at[key] = time() + seconds
         return True
 
     def ttl(self, key: str) -> int:
-        if key not in self._data:
-            return -2
-        if self._is_expired(key):
-            self._delete_internal(key)
+        if not self._has_live_key(key):
             return -2
 
         expires_at = self._expires_at.get(key)
@@ -82,11 +75,20 @@ class InMemoryKVStore:
         return ceil(remaining)
 
     def persist(self, key: str) -> bool:
-        if not self.exists(key):
+        if not self._has_live_key(key):
             return False
         if key not in self._expires_at:
             return False
         self._expires_at.pop(key, None)
+        return True
+
+    def _has_live_key(self, key: str) -> bool:
+        if key not in self._data:
+            self._expires_at.pop(key, None)
+            return False
+        if self._is_expired(key):
+            self._delete_internal(key)
+            return False
         return True
 
     def _is_expired(self, key: str) -> bool:
