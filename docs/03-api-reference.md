@@ -16,6 +16,10 @@
 { "success": false, "error": { "code": "ERROR_CODE", "message": "..." } }
 ```
 
+- 입력 검증 실패: HTTP `400`, `INVALID_INPUT`
+- 미존재 키 조회 실패: HTTP `404`, `KEY_NOT_FOUND`
+- 예상치 못한 서버 오류: HTTP `500`, `INTERNAL_ERROR`
+
 ### 표준 에러 코드
 - `INVALID_INPUT`
 - `KEY_NOT_FOUND`
@@ -27,7 +31,7 @@
 
 | 단계 | 엔드포인트 | 설명 |
 | --- | --- | --- |
-| 0 | `GET /health` | 기본 상태 확인 |
+| 0 | `GET /v1/health` | 기본 상태 확인 |
 | 1 | `POST /kv/set`, `GET /kv/get`, `DELETE /kv/del`, `GET /kv/exists` | 핵심 KV |
 | 2 | `POST /kv/expire`, `GET /kv/ttl`, `POST /kv/persist` | TTL/만료 |
 | 3 | `POST /kv/invalidate-prefix`, `GET /metrics/cache` | 범위 무효화/지표 |
@@ -38,6 +42,9 @@
 - 구현은 생성된 초안 검토/수정 후 진행한다.
 
 ## 3) 엔드포인트 요약
+
+### 3.0 `GET /v1/health`
+응답: `{ "success": true, "data": { "status": "ok" } }`
 
 ### 3.1 `POST /v1/kv/set`
 요청: `{ "key": "user:1", "value": "kim" }`  
@@ -64,6 +71,12 @@
 
 ```json
 { "success": false, "error": { "code": "KEY_NOT_FOUND", "message": "key not found" } }
+```
+
+`GET /v1/kv/get` 실패(입력 오류):
+
+```json
+{ "success": false, "error": { "code": "INVALID_INPUT", "message": "key is required" } }
 ```
 
 ### 3.5 `POST /v1/kv/expire`
