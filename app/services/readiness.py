@@ -15,7 +15,7 @@ class ReadinessResult:
 
 def evaluate_readiness() -> ReadinessResult:
     """
-    Stage-4 readiness is intentionally explicit.
+    Stage-5 readiness is intentionally explicit.
     RELEASE_READY=true is required to mark a release candidate as ready.
     """
     release_ready = os.getenv("RELEASE_READY", "false").lower() == "true"
@@ -24,13 +24,13 @@ def evaluate_readiness() -> ReadinessResult:
     if not release_ready:
         return ReadinessResult(
             ready=False,
-            stage=4,
+            stage=5,
             summary="release gate is closed: set RELEASE_READY=true after checklist and load verification",
         )
 
     return ReadinessResult(
         ready=True,
-        stage=4,
+        stage=5,
         summary=(
             "release gate is open; "
             f"runtime metrics snapshot hits={metrics.hits}, misses={metrics.misses}, "
