@@ -27,7 +27,7 @@
 - `PREFIX_INVALID`
 - `INTERNAL_ERROR`
 
-## 2) 0~4단계 엔드포인트 로드맵
+## 2) 0~5단계 엔드포인트 로드맵
 
 | 단계 | 엔드포인트 | 설명 |
 | --- | --- | --- |
@@ -36,6 +36,7 @@
 | 2 | `POST /kv/expire`, `GET /kv/ttl`, `POST /kv/persist` | TTL/만료 |
 | 3 | `POST /kv/invalidate-prefix`, `GET /metrics/cache` | 범위 무효화/지표 |
 | 4 | `GET /system/readiness` | 릴리스 준비 상태 |
+| 5 | `GET /system/durability` | 내구성 설정/파일 상태 확인 |
 
 원칙:
 - 각 단계 시작 전에 AI가 해당 단계 엔드포인트 스캐폴딩과 테스트 템플릿을 먼저 생성한다.
@@ -103,8 +104,12 @@
 설명: `hits`는 조회/존재확인 성공 수, `misses`는 조회/존재확인 실패 수, `deletes`는 실제 삭제 성공 수, `invalidations`는 prefix 무효화 성공 수, `errors`는 입력/서버 오류 수를 뜻한다.
 
 ### 3.10 `GET /v1/system/readiness`
-응답: `{ "success": true, "data": { "ready": true|false, "stage": 4, "summary": "..." } }`
+응답: `{ "success": true, "data": { "ready": true|false, "stage": 5, "summary": "..." } }`
 설명: `RELEASE_READY=true` 환경 변수가 설정되어야 `ready=true`가 된다.
+
+### 3.11 `GET /v1/system/durability`
+응답: `{ "success": true, "data": { "enabled": true|false, "aofPath": "...", "snapshotPath": "...", "aofExists": true|false, "snapshotExists": true|false, "snapshotEvery": N } }`
+설명: 내구성 모드(AOF/스냅샷) 활성 여부와 파일 상태를 반환한다.
 
 ## 4) 입력 검증 규칙
 
@@ -131,6 +136,7 @@
 | 2 | TTL 규칙 합의 | 만료 해석 혼선 | 경계 케이스 계약 명시 |
 | 3 | prefix 안전 규칙 명시 | 광범위 삭제 위험 | 빈 prefix 방지 포함 |
 | 4 | readiness 판정 기준 확정 | 상태 판단 모호 | 릴리스 기준 필드 문서화 |
+| 5 | durability 상태 노출 계약 확정 | 복구 상태 가시성 부족 | 내구성 상태 필드 문서화 |
 
 ## 6) 테스트 분류 연계
 

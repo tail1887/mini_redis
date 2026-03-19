@@ -14,7 +14,7 @@ def test_system_readiness_false_when_gate_closed(monkeypatch) -> None:
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["ready"] is False
-    assert payload["data"]["stage"] == 4
+    assert payload["data"]["stage"] == 5
 
 
 def test_system_readiness_true_when_gate_open(monkeypatch) -> None:
@@ -26,4 +26,4 @@ def test_system_readiness_true_when_gate_open(monkeypatch) -> None:
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["ready"] is True
-    assert payload["data"]["stage"] == 4
+    assert payload["data"]["stage"] == 5

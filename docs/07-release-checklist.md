@@ -1,4 +1,4 @@
-# 07. Release Checklist (Stage 4)
+# 07. Release Checklist (Stage 4~5)
 
 릴리스 직전/직후 체크를 표준화하기 위한 템플릿입니다.
 
@@ -35,7 +35,15 @@
 - [ ] 복구 절차 템플릿 테스트(`tests/test_deploy_recovery_templates.py`) 기준 점검
 - [ ] 실패 시 커뮤니케이션 채널/템플릿 준비
 
-## 6) 릴리스 승인 기록
+## 6) 동시성/내구성 게이트 (Stage 5)
+
+- [ ] 동시성 테스트(`tests/test_kv_store_concurrency.py`) 통과
+- [ ] 내구성 복구 테스트(`tests/test_kv_store_durability.py`) 통과
+- [ ] 운영 상태 API(`GET /v1/system/durability`) 계약 확인
+- [ ] 운영 환경 변수(`KV_PERSISTENCE_DIR`, `KV_SNAPSHOT_EVERY`) 점검
+- [ ] 재시작 복구 데모(쓰기 -> 프로세스 재시작 -> 조회) 확인
+
+## 7) 릴리스 승인 기록
 
 - [ ] 승인자:
 - [ ] 승인 시각:

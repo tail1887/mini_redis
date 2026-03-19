@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -19,7 +21,29 @@ from app.services.cache_metrics import cache_metrics
 from app.stores.kv_store import InMemoryKVStore
 
 router = APIRouter(prefix="/v1/kv", tags=["kv"])
-service = KVService(store=InMemoryKVStore())
+
+
+def _build_store() -> InMemoryKVStore:
+    persistence_dir = os.getenv("KV_PERSISTENCE_DIR", "").strip()
+    snapshot_every_raw = os.getenv("KV_SNAPSHOT_EVERY", "0").strip()
+    try:
+        snapshot_every = int(snapshot_every_raw)
+    except ValueError:
+        snapshot_every = 0
+
+    if not persistence_dir:
+        return InMemoryKVStore()
+
+    base_dir = Path(persistence_dir)
+    base_dir.mkdir(parents=True, exist_ok=True)
+    return InMemoryKVStore(
+        aof_path=base_dir / "kv.aof",
+        snapshot_path=base_dir / "kv.snapshot.json",
+        snapshot_every=snapshot_every,
+    )
+
+
+service = KVService(store=_build_store())
 
 COMMON_ERROR_RESPONSES = {
     400: {
